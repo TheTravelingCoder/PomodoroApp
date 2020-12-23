@@ -6,8 +6,8 @@ const https = require('https');
 
 var xurl = 'https://s4.digitsec.com';
 var rurl = 'https://s401.digitsec.com';
-xurl = 'https://salesforce.s4io.live:8088';
-rurl = 'https://salesforce.s4io.live:8088';
+xurl = 'https://salesforce.s4io.live';
+rurl = 'https://salesforce.s4io.live';
 var url;
 var file = '';
 var org_Id= '5eb90554b46a76444f91e1b8'; //prod
@@ -19,107 +19,103 @@ var P = ['\\', '|', '/', '-'];
 var x = 0;
 var user = '';
 var pass = '';
-var format = 'pdf';
+var format = 'json';
 var orgname = '';
 var listorg = false;
 var search = '';
-
 
 scansdisplayinterval = setInterval(function() {
         	twrl();
         	}, 250);
 
-function twrl() {
-    process.stdout.write('\rS4 Scanning ... ' + P[x++]);
-    x &= 3;
-  }
-
 var myArgs = process.argv.slice(2);
+
+switch (myArgs[0]) {
+case '-v':
+    console.log('\x1b[36m%s\x1b[0m', 'version 57' );
+    break;
+default:
+}
+
+switch (myArgs[0]) {
+case '-version':
+    console.log('\x1b[36m%s\x1b[0m', 'version 57' );
+    break;
+default:
+    console.log('\x1b[36m%s\x1b[0m', 'version 57' );
+}
 //console.log('Arguments: ', myArgs);
 
 if(myArgs.length >=6){
-switch (myArgs[0]) {
-case '-user':
-    user = myArgs[1];
-    break;
-default:
-    console.log('\x1b[36m%s\x1b[0m', 'Sorry, that didn\'t work. Use the following format:' );
-    console.log('s4 -user \'user@domain.com\' -pass \'secret\' -file \'path_to_zip\'');
-}
-switch (myArgs[2]) {    
-case '-pass':
-    pass = myArgs[3];
-    break;
-default:
-    console.log('\x1b[36m%s\x1b[0m', 'Sorry, that didn\'t work. Use the following format' );
-    console.log('s4 -user \'user@domain.com\' -pass \'secret\' -file \'path_to_zip\'');
-}
+  var i=0;
+  myArgs.forEach(function(arg){
+    if(arg == '-user')
+    {
+     user = myArgs[i+1];
+    }
+    if(arg == '-pass')
+    {
+     pass = myArgs[i+1];
+    }
+    if(arg == '-file')
+    {
+     file = myArgs[i+1];
+    }
+    if(arg == '-org')
+    {
+      if(myArgs[i+1] == 'add')
+      {
+        orgname = myArgs[i+2];
+      }else if(myArgs[i+1] == 'list')
+      {
+        listorg =true;
+      }
+      else if(myArgs[i+1] == 'search')
+      {
+        search =myArgs[i+2];
+      }
+    }
+    if(arg == '-s4url')
+    {
+     xurl = myArgs[i+1];
+     rurl = myArgs[i+1];
+    }
 
-switch (myArgs[4]) {    
-case '-file':
-    file = myArgs[5]
-    break;
-case '-org':
-  if(myArgs[5] == 'add')
-  {
-    orgname = myArgs[6];
-  }else if(myArgs[5] == 'list')
-  {
-    listorg =true;
-  }
-  else if(myArgs[5] == 'search')
-  {
-    search =myArgs[6];
-  }        
-default:
-    console.log('\x1b[36m%s\x1b[0m', 'Sorry, that didn\'t work. Use the following format' );
-    console.log('s4 -user \'user@domain.com\' -pass \'secret\' -file \'path_to_zip\'');
-}
-switch (myArgs[6]) {    
-case '-orgid':
-    org_Id = myArgs[7];
-    break;
-case '-format':
-    format = myArgs[7];
-case '-s4url':
-    xurl = myArgs[7];
-    rurl = myArgs[7];     
-default:
-}
-switch (myArgs[8]) {    
-case '-format':
-    format = myArgs[9];
-case '-s4url':
-    xurl = myArgs[9];
-    rurl = myArgs[9];         
-default:
-}
-switch (myArgs[10]) {   
-case '-s4url':
-    xurl = myArgs[11];
-    rurl = myArgs[11];         
-default:
-}
+    if(arg == '-format')
+    {
+     format = myArgs[i+1];
+    }
+
+    if(arg == '-orgid')
+    {
+     org_Id = myArgs[i+1];
+    }
+  i++;
+  });
 }
 else
 {
-	console.log('');
-	console.log('\x1b[36m%s\x1b[0m', 'Sorry, that didn\'t work. Use the following format' );
-  console.log('\x1b[33m%s\x1b[0m', 'Command: For windows use s4win.exe, for linux use ./s4linux, for mac osx use ./s4');
-  console.log('For example:');
-	console.log('./s4 -user \'user@domain.com\' -pass \'secret\' -file \'path_to_zip\'');
-	console.log('');
-  console.log('1. -user is the username of your S4 account');
-  console.log('2. -pass is the api key or password of your S4 account');
-  console.log('3. -file is the fully qualified path of your source code in zip format');
-  console.log('{Or} 3. -org is the to add, list or search. For example: -org add "name_of_org", -org list, -org search "search_string"');
-  console.log('');
-  console.log('{Optional} 4. -orgid is the orgid against which you want to initiate the scan');
-  console.log('{Optional} 5. -format is the format of output. The value can be pdf or json');
-  console.log('{Optional} 6. -s4url is the url where s4 server is running. Default value is: ' + xurl);
-  console.log('');
-  console.log('\x1b[31m%s\x1b[0m', 'For additional help and support, drop us a line at support@digitsec.com');
-	process.exit();
+
+    if(user =='' || pass == '')
+    {
+  	console.log('');
+  	console.log('\x1b[36m%s\x1b[0m', 'Sorry, that didn\'t work. Use the following format' );
+    console.log('\x1b[33m%s\x1b[0m', 'Command: For windows use s4win.exe, for linux use ./s4linux, for mac osx use ./s4');
+    console.log('For example:');
+  	console.log('./s4 -user \'user@domain.com\' -pass \'secret\' -file \'path_to_zip\' -orgid \'id_of_saved_s4_org\'');
+  	console.log('');
+    console.log('1. -user is the username of your S4 account');
+    console.log('2. -pass is the api key or password of your S4 account');
+    console.log('3. -file is the fully qualified path of your source code in zip format');
+    console.log('4. -orgid is the orgid against which you want to initiate the scan');
+    console.log('');
+    console.log('{Optional} 5. -org is the to add, list or search orgs. For example: -org add "name_of_org", -org list, -org search "search_string"');
+    console.log('{Optional} 6. -format is the format of output. The value can be pdf or json. Default is json.');
+    console.log('{Optional} 7. -s4url is the url where s4 server is running. Default value is: ' + xurl);
+    console.log('');
+    console.log('\x1b[31m%s\x1b[0m', 'For additional help and support, drop us a line at support@digitsec.com');
+  	process.exit();
+  }
 }
 
 console.log('\x1b[36m%s\x1b[0m','S4 scan initializing ...');
@@ -168,6 +164,13 @@ var body = {
     axios
     .post(url, body,options)
     .then(function(res){
+      console.log(res);
+      if(!res.data._id){
+        console.log('\n\x1b[31m%s\x1b[0m', 'Invalid orgid passed. Please, pass a valid -orgid in the command.');
+        clearInterval(scansdisplayinterval);
+        process.exit();
+        return;
+      }
     	console.log('\x1b[36m%s\x1b[0m','Initiating scan with id ... ' + res.data._id);
     	scand_Id = res.data._id;
     	url = xurl + '/scan/start';
@@ -266,7 +269,7 @@ catch(e){
           url = xurl + '/scan/' + body.scan_id + '/finding/download';
         }
 
-  			downloadPDF(url, token,body.scan_id);
+  			downloadPDF(url, token,body.scan_id, reps.data[0]);
 
 
   		}else if(reps.data[0].status == 'pending')
@@ -291,7 +294,7 @@ catch(e){
   	return;
   }
 
-  async function downloadPDF (durl, token,scanid) {  
+  async function downloadPDF (durl, token,scanid, scan_stats) {  
 
     try
     {
@@ -324,7 +327,15 @@ catch(e){
             }
         })
         .then((response) => {
-        	fs.createWriteStream('S4_Report_'+scanid+filext).write(response.data.toString());
+          //console.log(response.data.toString());
+          if(filext == '.pdf')
+          {
+           fs.createWriteStream('S4_Report_'+scanid+filext).write(response.data); 
+          }else{
+           var temp = [];
+           temp.push(response.data.toString());
+        	 fs.createWriteStream('S4_Report_'+scanid+filext).write('{"scanSummary":'+JSON.stringify(scan_stats).toString()+',"findings":['+temp.toString()+']}');
+          }
         	clearInterval(getsfdcScansinterval);
         	clearInterval(scansdisplayinterval);
         	console.log('');
@@ -341,7 +352,6 @@ catch(e){
       clearInterval(scansdisplayinterval);
       process.exit();
       }
-
 }
 
 
@@ -383,7 +393,7 @@ catch(e){
 
  if(search != '')
  {
-  console.log('SEARCH Called');
+  console.log('Search initiated ...');
     options = {
       url: xurl + '/sfdcinfo/?search='+search,
       method: 'get',
@@ -399,14 +409,23 @@ catch(e){
  console.log('\x1b[32m%s\x1b[0m','Sending Request ...');
     axios.request(options)
     .then((response) => {
-      console.log(response);
       if(response.status == '200')
         {
           console.log('\x1b[32m%s\x1b[0m', 'Success!');
           console.log(response.data);
         }
         process.exit();
+    })
+    .catch(function(e){
+      console.log('\n\x1b[31m%s\x1b[0m', 'Error creating org ... ', e.message);
+      console.log(e.response.data);
+     process.exit(); 
     });
    
 
 }
+
+function twrl() {
+    process.stdout.write('\rS4 Scanning ... ' + P[x++]);
+    x &= 3;
+  }
